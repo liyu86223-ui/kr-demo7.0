@@ -1,0 +1,1214 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>韩语语法微课</title>
+<style>
+:root {
+--primary-color: #4A90E2;
+--primary-deep: #2563EB;
+--error-color: #FF5252;
+--success-color: #A3C9A8;
+--success-text: #4A7C59;
+--success-bg: #F0FDF4;
+--chunk-bg: #F1F5F9;
+--chunk-bg-correct: #ECFDF5;
+--text-main: #1E293B;
+--text-sub: #94A3B8;
+--recording-color: #4A90E2;
+--tip-bg: #EFF6FF;
+--tip-accent: #4A90E2;
+--tip-text: #1E3A8A;
+--tip-title: #1D4ED8;
+--tip-chip-bg: #DBEAFE;
+--soft-gray: #CBD5E1;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #E2E8F0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+#app-container { width: 360px; height: 640px; background: white; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); overflow: hidden; position: relative; border: 8px solid #1E293B; }
+.step { display: none; padding: 20px; height: 100%; flex-direction: column; align-items: center; box-sizing: border-box; }
+.active { display: flex; }
+.bottom-btn { width: 100%; padding: 18px; background: #1E293B; color: white; border: none; border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: auto; margin-bottom: 10px; transition: transform 0.1s; flex-shrink: 0; }
+.bottom-btn:active { transform: scale(0.98); }
+
+.task-card {
+    background: #F1F5F9;
+    border-left: 4px solid var(--primary-color);
+    padding: 12px 15px;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    text-align: left;
+    flex-shrink: 0;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.task-tag { font-size: 11px; color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
+.task-content { font-size: 18px; font-weight: bold; color: var(--text-main); }
+.task-content .hl-target { color: var(--primary-color); font-weight: 900; }
+.task-content .sub-note { font-size: 13px; font-weight: 700; opacity: 0.65; margin-left: 1px; }
+
+.emoji-anchor {
+    margin-top: 35px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mode-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+}
+
+.opt-card { background: white; border: 2px solid #E2E8F0; padding: 10px 16px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: border-color 0.18s, background 0.18s, color 0.18s, opacity 0.25s; }
+.opt-card.hidden { visibility: hidden; pointer-events: none; }
+.opt-card.fade-out { opacity: 0; pointer-events: none; }
+.opt-card.correct-flash, .opt-item-wide.correct-flash {
+    border-color: var(--success-text) !important;
+    background: var(--chunk-bg-correct) !important;
+}
+.opt-card.correct-flash .kor-text, .opt-item-wide.correct-flash .kor-text {
+    color: var(--success-text) !important;
+}
+.opt-item-wide { background: white; border: 2px solid #E2E8F0; padding: 12px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 100%; box-sizing: border-box; transition: border-color 0.18s, background 0.18s, color 0.18s; margin-bottom: 5px; }
+.roman { font-size: 11px; color: var(--text-sub); font-weight: 500; margin-bottom: 2px; }
+.kor-text { font-size: 20px; font-weight: 800; color: var(--text-main); transition: color 0.18s ease; }
+.sentence-scroll-wrapper { width: 100%; overflow: hidden; margin-bottom: 10px; }
+.sentence-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; width: 100%; justify-content: flex-start; padding: 5px 5px 15px 5px; scrollbar-width: none; }
+.sentence-container::-webkit-scrollbar { display: none; }
+.chunk-box { display: flex; flex-direction: column; background: var(--chunk-bg); padding: 8px 10px; border-radius: 14px; flex-shrink: 0; align-items: center; white-space: nowrap; }
+.row-label { height: 18px; margin-bottom: 12px; display: flex; align-items: center; }
+.label-tag { font-size: 10px; font-weight: 800; color: #64748B; background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 4px; }
+.label-tag .hl-insert { color: var(--primary-color); }
+.label-tag.upgraded { background: var(--primary-color); color: white; }
+.label-tag.upgraded .hl-insert { color: white; }
+.row-content { height: 50px; display: flex; align-items: center; }
+.input-group { display: flex !important; flex-direction: row !important; gap: 6px; }
+.input-box { min-width: 52px; width: auto; height: 52px; padding: 0 6px; background: rgba(255,255,255,0.7); border: 2px dashed #CBD5E1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: border-color 0.25s, color 0.25s, background 0.25s; box-sizing: border-box; position: relative; }
+.input-box.filled { border-style: solid; border-color: var(--primary-color); background: white; }
+.input-box.filled.correct {
+    border-color: var(--success-text);
+    background: var(--chunk-bg-correct);
+}
+.input-box.filled.correct .kor-text {
+    color: var(--success-text) !important;
+}
+.input-box.error-shake {
+    border-color: var(--error-color) !important;
+    animation: shake 0.35s;
+}
+.input-box .hint-text {
+    color: #CBD5E1;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+.input-box .roman { font-size: 9px; line-height: 1; margin-bottom: 3px; }
+.input-box .kor-text { font-size: 16px; line-height: 1; white-space: nowrap; }
+.input-box.filled .kor-text { animation: fadeInFast 0.25s ease-out; }
+
+.input-box.static {
+    border: none !important;
+    background: transparent !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 2px 4px !important;
+    cursor: default !important;
+}
+.input-box.static .roman { font-size: 11px; color: var(--text-sub); margin-bottom: 3px; }
+.input-box.static .kor-text { font-size: 22px !important; color: var(--text-main) !important; animation: none !important; }
+
+.reveal-zone { display: none; flex-direction: column; align-items: flex-start; width: 100%; padding: 10px 15px; box-sizing: border-box; }
+.full-roman { font-size: 14px; color: var(--text-sub); margin-bottom: 4px; font-weight: 500; }
+.full-kor { font-size: 26px; font-weight: 800; color: #1E293B; line-height: 1.3; }
+.highlight { color: var(--primary-color); }
+.blank-line { width: 220px; border-bottom: 3px solid var(--primary-color); min-height: 60px; margin: 20px auto 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: border-color 0.3s ease; }
+.blank-line.filled { border-bottom: none; }
+.blank-line.error { border-bottom-color: var(--error-color); }
+.translation-main { font-size: 22px; color: var(--text-sub); font-weight: bold; }
+.filled-kor-large { font-size: 38px; font-weight: 900; color: var(--primary-color); line-height: 1; animation: fadeInFast 0.25s ease-out; }
+@keyframes fadeInFast { from { opacity: 0; } to { opacity: 1; } }
+.options-row { display: flex; gap: 10px; margin-top: 15px; justify-content: center; width: 100%; min-height: 70px; flex-wrap: wrap; }
+.options-column { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 40px; }
+
+.word-emoji-card {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 2px solid rgba(74, 144, 226, 0.2);
+    border-radius: 20px;
+    padding: 12px 22px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 6px 16px -4px rgba(74, 144, 226, 0.25);
+    flex-shrink: 0;
+}
+.word-emoji-card.compact { padding: 12px 22px; }
+.word-emoji { font-size: 44px; line-height: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1)); }
+.word-emoji-card.compact .word-emoji { font-size: 44px; }
+.word-emoji-label { font-size: 15px; color: var(--tip-title); font-weight: 700; letter-spacing: 3px; margin-top: 2px; }
+
+.grammar-note {
+    background: var(--tip-bg);
+    border-left: 4px solid var(--tip-accent);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    box-shadow: 0 2px 8px -2px rgba(74, 144, 226, 0.15);
+    animation: tipFadeIn 0.4s ease-out;
+}
+.grammar-note-icon { font-size: 18px; flex-shrink: 0; line-height: 1.5; }
+.grammar-note-body { flex: 1; }
+.grammar-note-text { color: var(--tip-text); font-size: 13px; line-height: 1.6; }
+.grammar-note-text .tip-keyword { background: var(--tip-chip-bg); color: var(--tip-title); padding: 1px 6px; border-radius: 4px; font-weight: 800; margin: 0 1px; }
+@keyframes tipFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.slot-unit { width: 60px; height: 80px; border-bottom: 3px solid #CBD5E1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: border-color 0.3s ease; }
+.slot-unit.error { border-bottom-color: var(--error-color); }
+.slot-unit .kor-text { animation: fadeInFast 0.2s ease-out; }
+
+.shadow-sentence-card { margin-top: 30px; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.shadow-kor-line { display: flex; align-items: center; gap: 12px; justify-content: flex-start; width: 100%; }
+.shadow-roman { font-size: 13px; color: var(--text-sub); font-weight: 500; letter-spacing: 0.3px; text-align: left; width: 100%; padding-left: 52px; box-sizing: border-box; }
+.shadow-kor { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.3; transition: color 0.5s ease; }
+.shadow-kor.correct { color: var(--success-text); }
+.shadow-cn { font-size: 14px; color: var(--text-sub); margin-top: 4px; text-align: left; width: 100%; padding-left: 52px; box-sizing: border-box; }
+.audio-play-btn-inline { background: var(--tip-bg); color: var(--primary-color); border: 2px solid rgba(74, 144, 226, 0.25); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; padding: 0; }
+.audio-play-btn-inline:active { transform: scale(0.92); background: #DBEAFE; }
+
+.mic-section { margin-top: auto; margin-bottom: 12px; width: 100%; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; }
+.quiet-toggle {
+    background: rgba(74, 144, 226, 0.08);
+    color: var(--primary-color);
+    border: 1px dashed rgba(74, 144, 226, 0.4);
+    border-radius: 14px;
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: all 0.2s;
+}
+.quiet-toggle:active {
+    transform: scale(0.96);
+    background: rgba(74, 144, 226, 0.15);
+}
+.quiet-toggle.hide-quiet {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+}
+.mic-btn { width: 84px; height: 84px; border-radius: 50%; background: white; border: 5px solid #E2E8F0; cursor: pointer; font-size: 36px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; transition: all 0.3s; position: relative; overflow: hidden; }
+.mic-btn.recording { border-color: var(--recording-color); animation: pulseRing 1.2s infinite; }
+.mic-btn.success { background: var(--success-color); border-color: var(--success-text); color: white; animation: none; }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(74,144,226,0.5); } 70% { box-shadow: 0 0 0 18px rgba(74,144,226,0); } 100% { box-shadow: 0 0 0 0 rgba(74,144,226,0); } }
+.mic-status { font-size: 13px; color: var(--text-sub); font-weight: 600; min-height: 18px; }
+.mic-status.success { color: var(--success-text); }
+
+@keyframes synthesisOut { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.9) translateY(-20px); } }
+.animate-synthesis-out { animation: synthesisOut 0.5s ease-in forwards; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+
+.expose-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 60px;
+}
+
+.expose-card {
+    position: relative;
+    background: linear-gradient(160deg, #FFFFFF 0%, #F5F9FF 55%, #E8F0FE 100%);
+    border: 1px solid rgba(74, 144, 226, 0.18);
+    border-radius: 22px;
+    padding: 18px 26px 20px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 260px;
+    box-shadow:
+        0 1px 2px rgba(74, 144, 226, 0.06),
+        0 10px 30px -8px rgba(74, 144, 226, 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    overflow: hidden;
+}
+
+.expose-card::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(74,144,226,0.10) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.expose-card::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: -30px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.expose-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.expose-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--primary-deep);
+    letter-spacing: 2.5px;
+    background: rgba(74, 144, 226, 0.12);
+    padding: 4px 10px 4px 9px;
+    border-radius: 20px;
+    border: 1px solid rgba(74, 144, 226, 0.18);
+}
+.expose-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+}
+
+.expose-audio-btn {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid rgba(74, 144, 226, 0.3);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px -1px rgba(74,144,226,0.25);
+}
+.expose-audio-btn:active { transform: scale(0.88); background: #DBEAFE; }
+
+.expose-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 14px;
+    min-height: 78px;
+}
+
+.expose-roman {
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    margin-bottom: 6px;
+    text-transform: lowercase;
+    min-height: 14px;
+}
+.expose-roman .roman-hl { color: var(--primary-color); font-weight: 800; }
+
+.expose-kor {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--text-main);
+    line-height: 1.15;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(30, 41, 59, 0.04);
+}
+.expose-kor .kor-hl {
+    color: var(--primary-color);
+    position: relative;
+    display: inline-block;
+}
+.expose-kor .kor-hl::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    opacity: 0.5;
+}
+
+.expose-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(74, 144, 226, 0.25);
+}
+.expose-cn {
+    font-size: 17px;
+    font-weight: 800;
+    color: #334155;
+    letter-spacing: 2px;
+}
+.expose-cn .cn-hl {
+    color: var(--primary-color);
+}
+.expose-cn .cn-sub {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    opacity: 0.65;
+    margin-left: 1px;
+}
+</style>
+</head>
+<body>
+
+<div id="app-container">
+
+<div id="step0" class="step active" style="justify-content: center;">
+<div style="font-size: 60px; margin-bottom: 40px;">🇰🇷</div>
+<button class="bottom-btn" style="width: auto; padding: 18px 60px; margin-top: 0;" onclick="goStep(1)">开始学习</button>
+</div>
+
+<div id="step1" class="step">
+    <div class="task-card">
+        <div class="task-content">惯用型介绍</div>
+    </div>
+    <div class="expose-wrap">
+        <div class="expose-card">
+            <div class="expose-top-bar">
+                <div class="expose-badge">惯用型</div>
+                <button class="expose-audio-btn" onclick="speak('먹고 싶다')">🔊</button>
+            </div>
+            <div class="expose-hero">
+                <div class="expose-roman">meok-<span class="roman-hl">go-sip(-da)</span></div>
+                <div class="expose-kor">먹<span class="kor-hl">고 싶(다)</span></div>
+            </div>
+            <div class="expose-footer">
+                <span class="expose-cn"><span class="cn-hl">想</span>吃</span>
+            </div>
+        </div>
+    </div>
+    <button class="bottom-btn" onclick="goStep(3)">继续</button>
+</div>
+
+<div id="step2" class="step">
+    <!-- 已下线 -->
+</div>
+
+<div id="step3" class="step">
+    <div class="task-card">
+        <div class="task-tag">请翻译句子</div>
+        <div class="task-content">"我想吃蛋糕"</div>
+    </div>
+    <div id="s3-interactive" style="width: 100%;">
+        <div class="sentence-scroll-wrapper">
+            <div class="sentence-container" style="justify-content: center;">
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">蛋糕</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">ke-i-keu-reul</span>
+                            <span class="kor-text">케이크를</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">想吃</span></div>
+                    <div class="row-content">
+                        <div class="input-group">
+                            <div id="s3-slot-1" class="input-box"><span class="hint-text">吃</span></div>
+                            <div id="s3-slot-2" class="input-box"><span class="hint-text">想</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">语尾</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">seum-ni-da</span>
+                            <span class="kor-text">습니다</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="options-row" id="s3-options">
+            <div class="opt-card" onclick="checkS3('고 싶', 'go-sip', this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+            <div class="opt-card" onclick="checkS3('먹', 'meok', this)"><span class="roman">meok</span><span class="kor-text">먹</span></div>
+        </div>
+    </div>
+    <div id="s3-reveal" class="reveal-zone">
+        <span class="full-roman">ke-i-keu-reul meok-<span class="highlight">go-sip</span>-seum-ni-da</span>
+        <div class="full-kor">케이크를 먹<span class="highlight">고 싶</span>습니다</div>
+        <div class="grammar-note">
+            <span class="grammar-note-icon">💡</span>
+            <div class="grammar-note-body">
+                <div class="grammar-note-text"><span class="tip-keyword">-고 싶(다)</span>这类惯用型通常以<span class="tip-keyword">(다)</span>结尾，但出现在句子中时，<span class="tip-keyword">(다)</span>需要被省略，省略后的<span class="tip-keyword">词干</span>接在动词后面。</div>
+            </div>
+        </div>
+    </div>
+    <button id="s3-next-btn" class="bottom-btn" style="display:none" onclick="goStep(4)">继续</button>
+</div>
+
+<div id="step4" class="step">
+    <div class="task-card"><div class="task-content">请选择正确选项</div></div>
+    <div class="emoji-anchor">
+        <div class="word-emoji-card">
+            <div class="word-emoji">🥤</div>
+            <div class="word-emoji-label">喝</div>
+        </div>
+        <div class="blank-line" id="s4-blank"></div>
+    </div>
+    <div class="options-column" id="s4-options" style="margin-top:10px;">
+        <div class="opt-item-wide" onclick="checkS4('먹', this)"><span class="roman">meok</span><span class="kor-text">먹</span></div>
+        <div class="opt-item-wide" onclick="checkS4('마시', this)"><span class="roman">ma-si</span><span class="kor-text">마시</span></div>
+    </div>
+    <button id="s4-next-btn" class="bottom-btn" style="display:none" onclick="goStep(5)">继续</button>
+</div>
+
+<div id="step5" class="step">
+    <div class="task-card"><div class="task-tag">请拼写</div><div class="task-content">拼写动词：喝</div></div>
+    <div class="emoji-anchor">
+        <div class="word-emoji-card compact">
+            <div class="word-emoji">🥤</div>
+            <div class="word-emoji-label">喝</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:10px; margin:25px 0; align-items: flex-end;">
+        <div id="s5-1" class="slot-unit" style="width:55px"></div>
+        <div id="s5-2" class="slot-unit" style="width:55px"></div>
+    </div>
+    <div class="options-row">
+        <div class="opt-card" onclick="checkS5('시', 'si', this)"><span class="roman">si</span><span class="kor-text">시</span></div>
+        <div class="opt-card" onclick="checkS5('마', 'ma', this)"><span class="roman">ma</span><span class="kor-text">마</span></div>
+    </div>
+    <button id="s5-next-btn" class="bottom-btn fade-in-up" style="display: none;" onclick="goStep(6)">继续</button>
+</div>
+
+<div id="step6" class="step">
+    <div class="task-card"><div class="task-content">请选择正确选项</div></div>
+    <div class="emoji-anchor">
+        <div class="word-emoji-card">
+            <div class="word-emoji">🛍️</div>
+            <div class="word-emoji-label">买</div>
+        </div>
+        <div class="blank-line" id="s6-blank"></div>
+    </div>
+    <div class="options-column" id="s6-options" style="margin-top:10px;">
+        <div class="opt-item-wide" onclick="checkS6('마시', this)"><span class="roman">ma-si</span><span class="kor-text">마시</span></div>
+        <div class="opt-item-wide" onclick="checkS6('사', this)"><span class="roman">sa</span><span class="kor-text">사</span></div>
+    </div>
+    <button id="s6-next-btn" class="bottom-btn" style="display:none" onclick="goStep(7)">继续</button>
+</div>
+
+<div id="step7" class="step">
+    <div class="task-card"><div class="task-tag">请拼写</div><div class="task-content">拼写动词：买</div></div>
+    <div class="emoji-anchor">
+        <div class="word-emoji-card compact">
+            <div class="word-emoji">🛍️</div>
+            <div class="word-emoji-label">买</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:10px; margin:25px 0; align-items: flex-end;">
+        <div id="s7-1" class="slot-unit" style="width:55px"></div>
+    </div>
+    <div class="options-row" id="s7-options">
+        <div class="opt-card" onclick="checkS7(this)"><span class="roman">sa</span><span class="kor-text">사</span></div>
+    </div>
+    <button id="s7-next-btn" class="bottom-btn fade-in-up" style="display: none;" onclick="goStep(8)">继续</button>
+</div>
+
+<div id="step8" class="step">
+    <div class="task-card"><div class="task-tag">请翻译句子</div><div class="task-content">"我想喝牛奶"</div></div>
+    <div id="s8-interactive" style="width: 100%;">
+        <div class="sentence-scroll-wrapper">
+            <div class="sentence-container" style="justify-content: center;">
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">牛奶</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">u-yu-reul</span>
+                            <span class="kor-text">우유를</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">想喝</span></div>
+                    <div class="row-content">
+                        <div class="input-group">
+                            <div id="s8-slot-1" class="input-box"></div>
+                            <div id="s8-slot-2" class="input-box"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">语尾</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">seum-ni-da</span>
+                            <span class="kor-text">습니다</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="options-row" id="s8-options">
+            <div class="opt-card" onclick="checkS8('고 싶', 'go-sip', this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+            <div class="opt-card" onclick="checkS8('사', 'sa', this)"><span class="roman">sa</span><span class="kor-text">사</span></div>
+            <div class="opt-card" onclick="checkS8('마시', 'ma-si', this)"><span class="roman">ma-si</span><span class="kor-text">마시</span></div>
+        </div>
+    </div>
+    <div id="s8-reveal" class="reveal-zone">
+        <span class="full-roman">u-yu-reul ma-si-go-sip-seum-ni-da</span>
+        <div class="full-kor">우유를 마시고 싶습니다</div>
+    </div>
+    <button id="s8-next-btn" class="bottom-btn" style="display:none" onclick="goStep(9)">继续</button>
+</div>
+
+<div id="step9" class="step">
+    <div class="task-card"><div class="task-tag">最终挑战</div><div class="task-content">"我想买杯子"</div></div>
+    <div id="s9-interactive" style="width: 100%;">
+        <div class="sentence-scroll-wrapper">
+            <div class="sentence-container" style="justify-content: center;">
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">杯子</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">keob-eul</span>
+                            <span class="kor-text">컵을</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">想买</span></div>
+                    <div class="row-content">
+                        <div class="input-group">
+                            <div id="s9-slot-1" class="input-box"></div>
+                            <div id="s9-slot-2" class="input-box"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chunk-box">
+                    <div class="row-label"><span class="label-tag">语尾</span></div>
+                    <div class="row-content">
+                        <div class="input-box static">
+                            <span class="roman">seum-ni-da</span>
+                            <span class="kor-text">습니다</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="options-row" id="s9-options">
+            <div class="opt-card" onclick="checkS9('사', 'sa', this)"><span class="roman">sa</span><span class="kor-text">사</span></div>
+            <div class="opt-card" onclick="checkS9('고 싶', 'go-sip', this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+            <div class="opt-card" onclick="checkS9('마시', 'ma-si', this)"><span class="roman">ma-si</span><span class="kor-text">마시</span></div>
+        </div>
+    </div>
+    <div id="s9-reveal" class="reveal-zone">
+        <span class="full-roman">keob-eul sa-go-sip-seum-ni-da</span>
+        <div class="full-kor">컵을 사고 싶습니다</div>
+    </div>
+    <button id="s9-next-btn" class="bottom-btn" style="display:none" onclick="goStep(10)">继续</button>
+</div>
+
+<!-- Step 10 -->
+<div id="step10" class="step" data-shadow="케이크를 먹고 싶습니다">
+    <div class="task-card">
+        <div class="task-tag" data-speak-tag="跟读练习" data-type-tag="拼句子练习">跟读练习</div>
+        <div class="task-content">我想吃蛋糕</div>
+    </div>
+
+    <div id="s10-speak-mode" class="mode-container">
+        <div class="shadow-sentence-card">
+            <div class="shadow-roman">ke-i-keu-reul meok-go-sip-seum-ni-da</div>
+            <div class="shadow-kor-line">
+                <button class="audio-play-btn-inline" onclick="speak('케이크를 먹고 싶습니다')">🔊</button>
+                <div class="shadow-kor" id="s10-kor">케이크를 먹고 싶습니다</div>
+            </div>
+            <div class="shadow-cn">我想吃蛋糕</div>
+        </div>
+        <div class="mic-section">
+            <button class="quiet-toggle" id="s10-quiet" onclick="switchToQuiet(10)">现在不做口语题</button>
+            <button class="mic-btn" id="s10-mic" onclick="startRecording(10)">🎤</button>
+            <div class="mic-status" id="s10-status">点击录音</div>
+        </div>
+    </div>
+
+    <div id="s10-type-mode" class="mode-container" style="display:none">
+        <div id="s10-type-interactive" style="width:100%;">
+            <div class="sentence-scroll-wrapper">
+                <div class="sentence-container" style="justify-content: center;">
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">蛋糕</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s10t-slot-1" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">想吃</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s10t-slot-2" class="input-box"></div>
+                                <div id="s10t-slot-3" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">语尾</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s10t-slot-4" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="options-row" id="s10t-options">
+                <div class="opt-card" data-k="케이크를" data-r="ke-i-keu-reul" onclick="checkS10Type('케이크를','ke-i-keu-reul',this)"><span class="roman">ke-i-keu-reul</span><span class="kor-text">케이크를</span></div>
+                <div class="opt-card" data-k="먹" data-r="meok" onclick="checkS10Type('먹','meok',this)"><span class="roman">meok</span><span class="kor-text">먹</span></div>
+                <div class="opt-card" data-k="고 싶" data-r="go-sip" onclick="checkS10Type('고 싶','go-sip',this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+                <div class="opt-card" data-k="습니다" data-r="seum-ni-da" onclick="checkS10Type('습니다','seum-ni-da',this)"><span class="roman">seum-ni-da</span><span class="kor-text">습니다</span></div>
+            </div>
+        </div>
+        <div id="s10-type-reveal" class="reveal-zone">
+            <span class="full-roman">ke-i-keu-reul meok-go-sip-seum-ni-da</span>
+            <div class="full-kor">케이크를 먹고 싶습니다</div>
+        </div>
+    </div>
+
+    <button id="s10-next-btn" class="bottom-btn" style="display:none" onclick="goStep(11)">继续</button>
+</div>
+
+<!-- Step 11 -->
+<div id="step11" class="step" data-shadow="우유를 마시고 싶습니다">
+    <div class="task-card">
+        <div class="task-tag" data-speak-tag="跟读练习" data-type-tag="拼句子练习">跟读练习</div>
+        <div class="task-content">我想喝牛奶</div>
+    </div>
+
+    <div id="s11-speak-mode" class="mode-container">
+        <div class="shadow-sentence-card">
+            <div class="shadow-roman">u-yu-reul ma-si-go-sip-seum-ni-da</div>
+            <div class="shadow-kor-line">
+                <button class="audio-play-btn-inline" onclick="speak('우유를 마시고 싶습니다')">🔊</button>
+                <div class="shadow-kor" id="s11-kor">우유를 마시고 싶습니다</div>
+            </div>
+            <div class="shadow-cn">我想喝牛奶</div>
+        </div>
+        <div class="mic-section">
+            <button class="quiet-toggle" id="s11-quiet" onclick="switchToQuiet(11)">现在不做口语题</button>
+            <button class="mic-btn" id="s11-mic" onclick="startRecording(11)">🎤</button>
+            <div class="mic-status" id="s11-status">点击录音</div>
+        </div>
+    </div>
+
+    <div id="s11-type-mode" class="mode-container" style="display:none">
+        <div id="s11-type-interactive" style="width:100%;">
+            <div class="sentence-scroll-wrapper">
+                <div class="sentence-container" style="justify-content: center;">
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">牛奶</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s11t-slot-1" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">想喝</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s11t-slot-2" class="input-box"></div>
+                                <div id="s11t-slot-3" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">语尾</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s11t-slot-4" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="options-row" id="s11t-options">
+                <div class="opt-card" data-k="우유를" data-r="u-yu-reul" onclick="checkS11Type('우유를','u-yu-reul',this)"><span class="roman">u-yu-reul</span><span class="kor-text">우유를</span></div>
+                <div class="opt-card" data-k="마시" data-r="ma-si" onclick="checkS11Type('마시','ma-si',this)"><span class="roman">ma-si</span><span class="kor-text">마시</span></div>
+                <div class="opt-card" data-k="고 싶" data-r="go-sip" onclick="checkS11Type('고 싶','go-sip',this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+                <div class="opt-card" data-k="습니다" data-r="seum-ni-da" onclick="checkS11Type('습니다','seum-ni-da',this)"><span class="roman">seum-ni-da</span><span class="kor-text">습니다</span></div>
+            </div>
+        </div>
+        <div id="s11-type-reveal" class="reveal-zone">
+            <span class="full-roman">u-yu-reul ma-si-go-sip-seum-ni-da</span>
+            <div class="full-kor">우유를 마시고 싶습니다</div>
+        </div>
+    </div>
+
+    <button id="s11-next-btn" class="bottom-btn" style="display:none" onclick="goStep(12)">继续</button>
+</div>
+
+<!-- Step 12 -->
+<div id="step12" class="step" data-shadow="컵을 사고 싶습니다">
+    <div class="task-card">
+        <div class="task-tag" data-speak-tag="跟读练习" data-type-tag="拼句子练习">跟读练习</div>
+        <div class="task-content">我想买杯子</div>
+    </div>
+
+    <div id="s12-speak-mode" class="mode-container">
+        <div class="shadow-sentence-card">
+            <div class="shadow-roman">keob-eul sa-go-sip-seum-ni-da</div>
+            <div class="shadow-kor-line">
+                <button class="audio-play-btn-inline" onclick="speak('컵을 사고 싶습니다')">🔊</button>
+                <div class="shadow-kor" id="s12-kor">컵을 사고 싶습니다</div>
+            </div>
+            <div class="shadow-cn">我想买杯子</div>
+        </div>
+        <div class="mic-section">
+            <button class="quiet-toggle" id="s12-quiet" onclick="switchToQuiet(12)">现在不做口语题</button>
+            <button class="mic-btn" id="s12-mic" onclick="startRecording(12)">🎤</button>
+            <div class="mic-status" id="s12-status">点击录音</div>
+        </div>
+    </div>
+
+    <div id="s12-type-mode" class="mode-container" style="display:none">
+        <div id="s12-type-interactive" style="width:100%;">
+            <div class="sentence-scroll-wrapper">
+                <div class="sentence-container" style="justify-content: center;">
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">杯子</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s12t-slot-1" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">想买</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s12t-slot-2" class="input-box"></div>
+                                <div id="s12t-slot-3" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chunk-box">
+                        <div class="row-label"><span class="label-tag">语尾</span></div>
+                        <div class="row-content">
+                            <div class="input-group">
+                                <div id="s12t-slot-4" class="input-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="options-row" id="s12t-options">
+                <div class="opt-card" data-k="컵을" data-r="keob-eul" onclick="checkS12Type('컵을','keob-eul',this)"><span class="roman">keob-eul</span><span class="kor-text">컵을</span></div>
+                <div class="opt-card" data-k="사" data-r="sa" onclick="checkS12Type('사','sa',this)"><span class="roman">sa</span><span class="kor-text">사</span></div>
+                <div class="opt-card" data-k="고 싶" data-r="go-sip" onclick="checkS12Type('고 싶','go-sip',this)"><span class="roman">go-sip</span><span class="kor-text">고 싶</span></div>
+                <div class="opt-card" data-k="습니다" data-r="seum-ni-da" onclick="checkS12Type('습니다','seum-ni-da',this)"><span class="roman">seum-ni-da</span><span class="kor-text">습니다</span></div>
+            </div>
+        </div>
+        <div id="s12-type-reveal" class="reveal-zone">
+            <span class="full-roman">keob-eul sa-go-sip-seum-ni-da</span>
+            <div class="full-kor">컵을 사고 싶습니다</div>
+        </div>
+    </div>
+
+    <button id="s12-next-btn" class="bottom-btn" style="display:none" onclick="showComplete()">完成学习</button>
+</div>
+
+<div id="step13" class="step" style="justify-content:center;">
+    <div style="font-size: 70px; margin-bottom: 30px;">🎉</div>
+    <div style="font-size:22px; font-weight:800; color:var(--text-main); margin-bottom:10px;">任务达成！</div>
+    <div style="font-size:14px; color:var(--text-sub); text-align:center; padding: 0 20px;">你已掌握"想做某事"的语法结构</div>
+    <button class="bottom-btn" onclick="goStep(0)">重新开始</button>
+</div>
+
+</div>
+
+<script>
+let audioCtx = null;
+function getAudioCtx() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+}
+function playTone(freq, duration, type = 'triangle', volume = 0.12, delay = 0) {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+}
+function sfxSuccess() {
+    playTone(523.25, 0.12, 'triangle', 0.10, 0);
+    playTone(659.25, 0.12, 'triangle', 0.10, 0.08);
+    playTone(783.99, 0.12, 'triangle', 0.10, 0.16);
+    playTone(1046.50, 0.38, 'triangle', 0.12, 0.24);
+    playTone(261.63, 0.45, 'sine', 0.05, 0.24);
+}
+function sfxError() {
+    playTone(220, 0.14, 'square', 0.05, 0);
+    playTone(165, 0.22, 'square', 0.05, 0.09);
+}
+
+let quietMode = false;
+const shuffledSteps = new Set();
+
+function shuffleChildren(parent) {
+    const children = Array.from(parent.children);
+    for (let i = children.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [children[i], children[j]] = [children[j], children[i]];
+    }
+    children.forEach(c => parent.appendChild(c));
+}
+
+function speak(text, rate = 0.9) {
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/^-/, '');
+    const msg = new SpeechSynthesisUtterance(cleanText);
+    msg.lang = 'ko-KR';
+    msg.rate = rate;
+    window.speechSynthesis.speak(msg);
+}
+
+function goStep(n) {
+    if (n === 0) quietMode = false;
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const stepEl = document.getElementById('step' + n);
+    stepEl.classList.add('active');
+
+    if (quietMode && [10, 11, 12].includes(n)) {
+        applyTypeMode(n);
+        return;
+    }
+
+    const shadowText = stepEl.getAttribute('data-shadow');
+    if (shadowText) {
+        setTimeout(() => speak(shadowText), 350);
+    }
+    if (n === 1) {
+        setTimeout(() => speak('먹고 싶다'), 400);
+    }
+}
+
+function applyTypeMode(stepN) {
+    const sm = document.getElementById(`s${stepN}-speak-mode`);
+    const tm = document.getElementById(`s${stepN}-type-mode`);
+    if (sm) sm.style.display = 'none';
+    if (tm) {
+        tm.style.display = 'flex';
+        tm.classList.add('fade-in-up');
+    }
+    const stepEl = document.getElementById('step' + stepN);
+    const taskTag = stepEl.querySelector('.task-card .task-tag');
+    if (taskTag && taskTag.dataset.typeTag) {
+        taskTag.textContent = taskTag.dataset.typeTag;
+    }
+    if (!shuffledSteps.has(stepN)) {
+        const opts = document.getElementById(`s${stepN}t-options`);
+        if (opts) shuffleChildren(opts);
+        shuffledSteps.add(stepN);
+    }
+}
+
+function switchToQuiet(stepNum) {
+    quietMode = true;
+    window.speechSynthesis.cancel();
+    applyTypeMode(stepNum);
+}
+
+function showComplete() { goStep(13); }
+
+function flashInputBoxError(el) {
+    el.classList.add('error-shake');
+    setTimeout(() => el.classList.remove('error-shake'), 360);
+}
+
+function flashSlotError(el) {
+    el.classList.add('error');
+    setTimeout(() => el.classList.remove('error'), 500);
+}
+
+const CORRECT_DELAY = 250;
+
+function makeSentenceChecker(prefix, targets, finalText, revealId, nextBtnId, interactiveId, optionsId) {
+    let idx = 0;
+    return function check(k, r, btn) {
+        const slot = document.getElementById(`${prefix}-slot-${idx + 1}`);
+        if (k === targets[idx]) {
+            speak(k);
+            btn.classList.add('correct-flash');
+            setTimeout(() => {
+                slot.classList.add('filled', 'correct');
+                slot.innerHTML = `<span class="roman">${r}</span><span class="kor-text">${k}</span>`;
+                btn.style.visibility = 'hidden';
+                btn.classList.remove('correct-flash');
+                idx++;
+                if (idx === targets.length) {
+                    setTimeout(() => {
+                        sfxSuccess();
+                        document.querySelectorAll(`#${optionsId} .opt-card`).forEach(opt => {
+                            if (opt.style.visibility !== 'hidden') {
+                                opt.classList.add('fade-out');
+                            }
+                        });
+                        setTimeout(() => {
+                            performSynthesis(interactiveId, revealId, null, nextBtnId, finalText);
+                        }, 500);
+                    }, 250);
+                }
+            }, CORRECT_DELAY);
+        } else {
+            sfxError();
+            flashInputBoxError(slot);
+        }
+    };
+}
+
+const checkS3 = makeSentenceChecker(
+    's3', ['먹', '고 싶'],
+    '케이크를 먹고 싶습니다', 's3-reveal', 's3-next-btn', 's3-interactive', 's3-options'
+);
+
+const checkS8 = makeSentenceChecker(
+    's8', ['마시', '고 싶'],
+    '우유를 마시고 싶습니다', 's8-reveal', 's8-next-btn', 's8-interactive', 's8-options'
+);
+
+const checkS9 = makeSentenceChecker(
+    's9', ['사', '고 싶'],
+    '컵을 사고 싶습니다', 's9-reveal', 's9-next-btn', 's9-interactive', 's9-options'
+);
+
+function makeFullTypeChecker(stepN, slotIds, targets, finalText) {
+    let idx = 0;
+    return function(k, r, btn) {
+        if (idx >= slotIds.length) return;
+        const slot = document.getElementById(slotIds[idx]);
+        if (k === targets[idx]) {
+            speak(k);
+            btn.classList.add('correct-flash');
+            setTimeout(() => {
+                slot.classList.add('filled', 'correct');
+                slot.innerHTML = `<span class="roman">${r}</span><span class="kor-text">${k}</span>`;
+                btn.style.visibility = 'hidden';
+                btn.classList.remove('correct-flash');
+                idx++;
+                if (idx === slotIds.length) {
+                    setTimeout(() => {
+                        sfxSuccess();
+                        document.querySelectorAll(`#s${stepN}t-options .opt-card`).forEach(opt => {
+                            if (opt.style.visibility !== 'hidden') {
+                                opt.classList.add('fade-out');
+                            }
+                        });
+                        setTimeout(() => {
+                            performSynthesis(`s${stepN}-type-interactive`, `s${stepN}-type-reveal`, null, `s${stepN}-next-btn`, finalText);
+                        }, 500);
+                    }, 250);
+                }
+            }, CORRECT_DELAY);
+        } else {
+            sfxError();
+            flashInputBoxError(slot);
+        }
+    };
+}
+
+const checkS10Type = makeFullTypeChecker(
+    10,
+    ['s10t-slot-1', 's10t-slot-2', 's10t-slot-3', 's10t-slot-4'],
+    ['케이크를', '먹', '고 싶', '습니다'],
+    '케이크를 먹고 싶습니다'
+);
+const checkS11Type = makeFullTypeChecker(
+    11,
+    ['s11t-slot-1', 's11t-slot-2', 's11t-slot-3', 's11t-slot-4'],
+    ['우유를', '마시', '고 싶', '습니다'],
+    '우유를 마시고 싶습니다'
+);
+const checkS12Type = makeFullTypeChecker(
+    12,
+    ['s12t-slot-1', 's12t-slot-2', 's12t-slot-3', 's12t-slot-4'],
+    ['컵을', '사', '고 싶', '습니다'],
+    '컵을 사고 싶습니다'
+);
+
+function checkS4(v, b) {
+    if (v === '마시') {
+        speak('마시');
+        b.classList.add('correct-flash');
+        setTimeout(() => {
+            document.getElementById('s4-options').style.display = 'none';
+            const blank = document.getElementById('s4-blank');
+            blank.classList.add('filled');
+            blank.innerHTML = `
+                <span class="roman">ma-si</span>
+                <span class="filled-kor-large">마시</span>
+            `;
+            document.getElementById('s4-next-btn').style.display = 'block';
+        }, CORRECT_DELAY);
+    } else {
+        sfxError();
+        b.style.borderColor = 'var(--error-color)';
+        setTimeout(() => b.style.borderColor = '#E2E8F0', 500);
+    }
+}
+
+let s5Idx=0;
+function checkS5(k,r,b){
+    const target=['마','시'];
+    const s=document.getElementById('s5-'+(s5Idx+1));
+    if(k===target[s5Idx]){
+        speak(k);
+        b.classList.add('correct-flash');
+        setTimeout(() => {
+            s.innerHTML=`<span class="roman">${r}</span><span class="kor-text" style="font-size:30px">${k}</span>`;
+            s5Idx++;
+            b.style.visibility='hidden';
+            b.classList.remove('correct-flash');
+            if(s5Idx===2){
+                setTimeout(()=>speak('마시'),400);
+                document.getElementById('s5-next-btn').style.display='block';
+            }
+        }, CORRECT_DELAY);
+    } else {
+        sfxError();
+        flashSlotError(s);
+    }
+}
+
+function checkS6(v,b){
+    if(v==='사'){
+        speak('사');
+        b.classList.add('correct-flash');
+        setTimeout(() => {
+            document.getElementById('s6-options').style.display='none';
+            const blank = document.getElementById('s6-blank');
+            blank.classList.add('filled');
+            blank.innerHTML = `
+                <span class="roman">sa</span>
+                <span class="filled-kor-large">사</span>
+            `;
+            document.getElementById('s6-next-btn').style.display='block';
+        }, CORRECT_DELAY);
+    } else {
+        sfxError();
+        b.style.borderColor='var(--error-color)';
+        setTimeout(()=>b.style.borderColor='#E2E8F0',500);
+    }
+}
+
+function checkS7(b){
+    const s=document.getElementById('s7-1');
+    speak('사');
+    b.classList.add('correct-flash');
+    setTimeout(() => {
+        s.innerHTML=`<span class="roman">sa</span><span class="kor-text" style="font-size:30px">사</span>`;
+        b.style.visibility='hidden';
+        document.getElementById('s7-next-btn').style.display='block';
+    }, CORRECT_DELAY);
+}
+
+function performSynthesis(iId, rId, sId, nId, text) {
+    const i=document.getElementById(iId);
+    const r=document.getElementById(rId);
+    const n=document.getElementById(nId);
+    i.classList.add('animate-synthesis-out');
+    if(sId && document.getElementById(sId)) document.getElementById(sId).style.display='none';
+    setTimeout(() => speak(text), 500);
+    setTimeout(() => {
+        i.style.display='none';
+        r.style.display='flex';
+        r.classList.add('fade-in-up');
+        n.style.display='block';
+    }, 450);
+}
+
+function startRecording(stepNum) {
+    const mic = document.getElementById(`s${stepNum}-mic`);
+    const status = document.getElementById(`s${stepNum}-status`);
+    const korEl = document.getElementById(`s${stepNum}-kor`);
+    const nextBtn = document.getElementById(`s${stepNum}-next-btn`);
+    const quietBtn = document.getElementById(`s${stepNum}-quiet`);
+
+    if (mic.classList.contains('success')) return;
+
+    window.speechSynthesis.cancel();
+
+    if (quietBtn) quietBtn.classList.add('hide-quiet');
+
+    mic.classList.add('recording');
+    mic.innerHTML = '⏺';
+    status.textContent = '录音中…';
+    status.classList.remove('success');
+
+    setTimeout(() => {
+        mic.classList.remove('recording');
+        mic.classList.add('success');
+        mic.innerHTML = '✓';
+        status.textContent = '发音正确！';
+        status.classList.add('success');
+        korEl.classList.add('correct');
+        nextBtn.style.display = 'block';
+    }, 1600);
+}
+</script>
+
+
+</body></html>
